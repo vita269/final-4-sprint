@@ -11,6 +11,32 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// Тестирование функции parsePackage
+func TestParsePackage(t *testing.T) {
+	tests := struct {
+		input string
+		steps int
+		dur   time.Duration
+		err   string
+	}{
+		{"100,1h", 100, time.Hour, ""}, // Успешный случай
+		{"0,2h", 0, time.Hour * 2, "количество шагов должно быть больше нуля"}, // Шаги равны нулю
+		{"100,invalid", 100, 0, "не удалось преобразовать количество шагов"},   // Неверный формат времени
+		{"100,1h", 100, time.Hour, ""}, // Повторный успешный случай
+		{"100,0", 100, 0, "не удалось преобразовать длительность"}, // Нулевая длительность
+	}
+
+	for _, test := range tests {
+		steps, duration, err := daysteps.parsePackage(test.input)
+		if err != nil && err.Error() != test.err {
+			t.Errorf("parsePackage(%q) expected error '%s' but got '%s'", test.input, test.err, err.Error())
+		}
+		if steps != test.steps || duration != test.dur {
+			t.Errorf("parsePackage(%q) returned incorrect values: steps=%d, duration=%v, expected steps=%d, duration=%v", test.input, steps, duration, test.steps, test.dur)
+		}
+	}
+}
+
 type DayStepsTestSuite struct {
 	suite.Suite
 }
